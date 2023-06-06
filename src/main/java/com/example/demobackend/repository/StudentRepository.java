@@ -11,7 +11,13 @@ import java.util.List;
 @Repository
 public interface StudentRepository extends MongoRepository<Student,String> {
 
-    @Aggregation("{'$limit': ?0}")
-    List<Student> getStudentData(int limit);
+    @Aggregation("{'$match': {'entry_year' : {'$in': ?0}}}")
+    List<Student> getStudentData(Iterable<String> entryYears);
 
+    @Query("{'entry_year' : {'$in': ?0}}")
+    List<Student> getStudentData2(Iterable<String> entryYears);
+
+    List<Student> findAllByEntryYear(Iterable<String> entryYears);
+
+    List<Student> findByEntryYearIn(Iterable<String> entryYears);
 }

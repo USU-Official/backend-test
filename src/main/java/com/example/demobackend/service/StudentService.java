@@ -20,6 +20,8 @@ import java.util.List;
 
 @Service
 public class StudentService {
+
+    private List<String> entryYears = List.of("2004/2005", "2005/2006", "2019/2020", "2020/2021", "2021/2022");
     @Autowired
     StudentRepository studentRepository;
 
@@ -29,10 +31,10 @@ public class StudentService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public Object findAll(Integer limit){
+    public Object findAll(){
 
         Instant start = Instant.now();
-        List<Student> students = studentRepository.getStudentData(limit);
+        List<Student> students = studentRepository.getStudentData(entryYears);
         Instant stop = Instant.now();
         Duration anotate = Duration.between(start,stop);
 
@@ -44,9 +46,56 @@ public class StudentService {
         return data;
     }
 
-    public Object findAllByResource(Integer limit){
-        Query query = new Query().limit(limit);
+    public Object findAll3(){
+
         Instant start = Instant.now();
+        List<Student> students = studentRepository.getStudentData2(entryYears);
+        Instant stop = Instant.now();
+        Duration anotate = Duration.between(start,stop);
+
+
+        HashMap<String,Object> data = new HashMap<>();
+        data.put("by_anotate3",this.structTime(anotate));
+        data.put("size", students.size());
+
+        return data;
+    }
+
+    public Object findAllIn(){
+
+        Instant start = Instant.now();
+        List<Student> students = studentRepository.findByEntryYearIn(entryYears);
+        Instant stop = Instant.now();
+        Duration anotate = Duration.between(start,stop);
+
+
+        HashMap<String,Object> data = new HashMap<>();
+        data.put("by_anotate_in",this.structTime(anotate));
+        data.put("size", students.size());
+
+        return data;
+    }
+
+    public Object findAll2(){
+
+        Instant start = Instant.now();
+        List<Student> students = studentRepository.findAllByEntryYear(entryYears);
+        Instant stop = Instant.now();
+        Duration anotate = Duration.between(start,stop);
+
+
+        HashMap<String,Object> data = new HashMap<>();
+        data.put("by_anotate2",this.structTime(anotate));
+        data.put("size", students.size());
+
+        return data;
+    }
+
+    public Object findAllByResource(Integer limit){
+        Instant start = Instant.now();
+        Query query = new Query();
+        query.addCriteria(Criteria.where("entry_year").in(entryYears));
+
         List<Student> students = studentRepositoryResource.findAll(query);
         Instant stop = Instant.now();
         Duration anotate = Duration.between(start,stop);
@@ -61,10 +110,11 @@ public class StudentService {
 
     public HashMap<String, Object> getFilteredStudents(int limit){
         Instant start = Instant.now();
-        LimitOperation limitOperation = Aggregation.limit(limit);
+        MatchOperation match = Aggregation.match(Criteria.where("entry_year").in(entryYears));
+//        LimitOperation limitOperation = Aggregation.limit(limit);
         AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
 
-        Aggregation aggregation = Aggregation.newAggregation(limitOperation).withOptions(options);
+        Aggregation aggregation = Aggregation.newAggregation(match).withOptions(options);
 
         List<Student> students = mongoTemplate.aggregate(aggregation, "students", Student.class).getMappedResults();
 

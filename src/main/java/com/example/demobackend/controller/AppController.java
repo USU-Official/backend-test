@@ -20,7 +20,7 @@ public class AppController {
 
     @GetMapping("/run-findall")
     public ResponseEntity<?> checkFindAll() {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(studentService.findAll(100));
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(studentService.findAll());
     }
 
     @GetMapping("/run-resource")
@@ -37,8 +37,12 @@ public class AppController {
     public ResponseEntity<?> runAll(@PathVariable int limit) {
         HashMap<String, Object> data = new HashMap<>();
 
+        data.put("not_count", studentService.findAllByResource(limit));
         data.put("at_resource", studentService.findAllByResource(limit));
-        data.put("at_annote", studentService.findAll(limit));
+        data.put("at_annote", studentService.findAll());
+        data.put("at_annote_in", studentService.findAllIn());
+        data.put("at_annote2", studentService.findAll2());
+        data.put("at_annote3", studentService.findAll3());
         data.put("at_mongoTemplate", studentService.getFilteredStudents(limit));
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(data);
     }
